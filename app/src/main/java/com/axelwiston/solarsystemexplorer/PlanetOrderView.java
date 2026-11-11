@@ -181,7 +181,8 @@ public class PlanetOrderView extends View {
         return Color.rgb(Math.min(255,Color.red(color)+65),Math.min(255,Color.green(color)+65),Math.min(255,Color.blue(color)+65));
     }
 
-    private float maxRadius() { return Math.min(getWidth()*.43f,getHeight()*.405f); }\n    private float orbitRadius(int slot) { float max=maxRadius(); return 34f*density + slot*Math.max(1f,(max-34f*density)/7f); }
+    private float maxRadius() { return Math.min(getWidth()*.43f,getHeight()*.405f); }
+    private float orbitRadius(int slot) { float max=maxRadius(); return 34f*density + slot*Math.max(1f,(max-34f*density)/7f); }
 
     @Override public boolean onTouchEvent(MotionEvent e) {
         float cx=getWidth()/2f, cy=getHeight()/2f+7f*density;
