@@ -86,7 +86,7 @@ public class MainActivity extends Activity {
         orderView=findViewById(R.id.orderPuzzle);
         orbitButton=findViewById(R.id.orbitButton);
         orderView.setOnOrderCorrectListener(correct -> orbitButton.setVisibility(correct ? View.VISIBLE : View.GONE));
-        orbitButton.setOnClickListener(v -> { systemView.startOrbitAnimation(); v.setText("Planets are orbiting! ✨"); });
+        orbitButton.setOnClickListener(v -> { systemView.startOrbitAnimation(); orbitButton.setText("Planets are orbiting! ✨"); });
         systemView.setOnPlanetSelectedListener(this::showPlanet);
         systemView.setOnPlanetOpenedListener(this::openPlanet);
         detailPlanetView.setOnWorldFeatureListener((planet, feature) -> {
