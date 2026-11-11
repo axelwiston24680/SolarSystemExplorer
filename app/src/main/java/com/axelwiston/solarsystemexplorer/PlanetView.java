@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.RadialGradient;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -35,7 +36,12 @@ public class PlanetView extends View {
     private final float density;
 
     public PlanetView(Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    // Required when this custom view is inflated from activity_main.xml.
+    public PlanetView(Context context, AttributeSet attrs) {
+        super(context, attrs);
         density = getResources().getDisplayMetrics().density;
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         setClickable(true);
