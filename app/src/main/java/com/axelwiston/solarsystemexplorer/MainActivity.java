@@ -14,6 +14,8 @@ public class MainActivity extends Activity {
     private LinearLayout answers;
     private View homeScreen, detailScreen;
     private PlanetView systemView, detailPlanetView;
+    private PlanetOrderView orderView;
+    private Button orbitButton;
     private int questionIndex=0, score=0;
     private boolean answered=false;
 
@@ -47,6 +49,18 @@ public class MainActivity extends Activity {
         "One year on Uranus lasts 84 Earth years.",
         "Neptune takes about 165 Earth years to orbit the Sun."
     };
+    private final String[][] worldFeatures={
+        {"The Sun is a huge ball of hot gas. Its energy travels through space as sunlight.","The Sun’s surface has cooler, darker patches called sunspots.","The Sun’s gravity keeps the planets moving around it."},
+        {"Mercury has many impact craters, made when space rocks hit its surface.","Mercury has almost no atmosphere to hold in heat.","A year on Mercury is only 88 Earth days."},
+        {"Venus is covered by thick clouds of sulfuric acid.","Its atmosphere traps heat, making Venus the hottest planet.","Venus spins very slowly and in the opposite direction to most planets."},
+        {"Earth’s oceans cover about 71% of its surface.","Our atmosphere helps protect life and keeps Earth warm enough.","Earth’s Moon helps create ocean tides."},
+        {"Mars has giant volcanoes, including Olympus Mons.","The reddish color comes from iron-rich dust, like rust.","Mars has two small moons: Phobos and Deimos."},
+        {"Jupiter’s Great Red Spot is a gigantic storm.","Jupiter has faint rings made of dust.","Jupiter has many moons, including icy Europa."},
+        {"Saturn’s rings are made of countless pieces of ice and rock.","The rings are very wide but surprisingly thin.","Saturn has many moons, including Titan."},
+        {"Uranus rotates almost on its side.","Its blue-green color comes from methane in the atmosphere.","Uranus has faint rings and many moons."},
+        {"Neptune has extremely fast winds.","Its deep blue color comes partly from gases in its atmosphere.","Neptune is so far away that one year lasts 165 Earth years."}
+    };
+
     private final String[] discovered={
         "Known since prehistoric times. People have observed the Sun for thousands of years; there is no single known discoverer.",
         "Known since ancient times. It can be seen with the naked eye, so its first observer is unknown.",
@@ -69,8 +83,16 @@ public class MainActivity extends Activity {
         planetName=findViewById(R.id.planetName);planetFact=findViewById(R.id.planetFact);planetExtra=findViewById(R.id.planetExtra);
         quizQuestion=findViewById(R.id.quizQuestion);quizFeedback=findViewById(R.id.quizFeedback);answers=findViewById(R.id.answers);
         systemView=findViewById(R.id.planetView);detailPlanetView=findViewById(R.id.detailPlanetView);
+        orderView=findViewById(R.id.orderPuzzle);
+        orbitButton=findViewById(R.id.orbitButton);
+        orderView.setOnOrderCorrectListener(correct -> orbitButton.setVisibility(correct ? View.VISIBLE : View.GONE));
+        orbitButton.setOnClickListener(v -> { systemView.startOrbitAnimation(); v.setText("Planets are orbiting! ✨"); });
         systemView.setOnPlanetSelectedListener(this::showPlanet);
         systemView.setOnPlanetOpenedListener(this::openPlanet);
+        detailPlanetView.setOnWorldFeatureListener((planet, feature) -> {
+            String[] items = worldFeatures[planet];
+            ((TextView)findViewById(R.id.detailWorldInfo)).setText("🔎 " + items[feature]);
+        });
         findViewById(R.id.closeDetail).setOnClickListener(v->closePlanet());
         findViewById(R.id.nextQuestion).setOnClickListener(v->nextQuestion());
         showPlanet(0);showQuestion();

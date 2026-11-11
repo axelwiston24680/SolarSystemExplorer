@@ -16,9 +16,11 @@ import android.view.GestureDetector;
 public class PlanetView extends View {
     public interface OnPlanetSelectedListener { void onPlanetSelected(int index); }
     public interface OnPlanetOpenedListener { void onPlanetOpened(int index); }
+    public interface OnWorldFeatureListener { void onWorldFeature(int planet, int feature); }
 
     private OnPlanetSelectedListener listener;
     private OnPlanetOpenedListener openedListener;
+    private OnWorldFeatureListener worldFeatureListener;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final float[] x = new float[9], y = new float[9], radius = new float[9];
     private final float density;
@@ -28,6 +30,9 @@ public class PlanetView extends View {
     private float rotation = 0f;
     private float previousX;
     private boolean dragging = false;
+    private boolean orbitAnimation = false;
+    private float orbitPhase = 0f;
+    private final Runnable orbitTick = new Runnable() { @Override public void run() { if (orbitAnimation && !detailMode) { orbitPhase += 0.018f; invalidate(); postDelayed(this, 16); } } };
 
     private final int[] colors = {0xFFFFC84A,0xFFB7A18A,0xFFE9B878,0xFF3E91D5,0xFFE45B43,0xFFD9A66B,0xFFE8C778,0xFF72D5D0,0xFF426FE0};
     private final String[] labels = {"Sun","Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus","Neptune"};
@@ -59,6 +64,8 @@ public class PlanetView extends View {
 
     public void setOnPlanetSelectedListener(OnPlanetSelectedListener l) { listener = l; }
     public void setOnPlanetOpenedListener(OnPlanetOpenedListener l) { openedListener = l; }
+    public void setOnWorldFeatureListener(OnWorldFeatureListener l) { worldFeatureListener = l; }
+    public void startOrbitAnimation() { orbitAnimation = true; orbitPhase = 0f; removeCallbacks(orbitTick); post(orbitTick); }
     public void showPlanetDetail(int index) { selectedPlanet = Math.max(0, Math.min(8,index)); detailMode = true; rotation = 0f; invalidate(); }
     public void showSolarSystem() { detailMode = false; invalidate(); }
 
@@ -88,17 +95,18 @@ public class PlanetView extends View {
         for(int i=1;i<9;i++){float d=orbit[i]*unit;c.drawOval(new RectF(cx-d,cy-d*.48f,cx+d,cy+d*.48f),paint);}
         x[0]=cx;y[0]=cy;radius[0]=20f*unit;
         for(int i=1;i<9;i++){
-            x[i]=cx-orbit[i]*.82f*unit;y[i]=cy-orbit[i]*.39f*unit;
+            float a = orbitAnimation ? orbitPhase + i * 0.82f : (float)Math.PI;
+            x[i]=cx+(float)Math.cos(a)*orbit[i]*.82f*unit;y[i]=cy+(float)Math.sin(a)*orbit[i]*.39f*unit;
             float size=i==5?13f:(i==6?12f:(i==1?5f:(i==2||i==3||i==4?8f:9f)));
             radius[i]=size*unit;
         }
         for(int i=0;i<9;i++){
-            drawSphere(c,x[i],y[i],radius[i],colors[i],i,rotation);
+            drawSphere(c,x[i],y[i],radius[i],colors[i],i,orbitPhase + rotation);
             paint.setShader(null);paint.setStyle(Paint.Style.FILL);paint.setColor(0xFFEAF0FF);paint.setTextSize(10f*unit);
             c.drawText(labels[i],x[i]-paint.measureText(labels[i])/2f,y[i]+radius[i]+13f*unit,paint);
         }
         paint.setColor(0xFFFFD56A);paint.setTextSize(10f*density);
-        String hint="TAP TO LEARN  •  DOUBLE-TAP TO OPEN";
+        String hint=orbitAnimation ? "WATCH THE PLANETS ORBIT THE SUN" : "TAP TO LEARN  •  DOUBLE-TAP TO OPEN";
         c.drawText(hint,cx-paint.measureText(hint)/2f,h-8f*density,paint);
     }
 
@@ -112,8 +120,10 @@ public class PlanetView extends View {
         String label=labels[selectedPlanet];
         c.drawText(label,cx-paint.measureText(label)/2f,cy+r+34f*density,paint);
         paint.setTextSize(10f*density);paint.setColor(0xFFBFD0FF);
-        String instruction="DRAG LEFT OR RIGHT TO ROTATE";
-        c.drawText(instruction,cx-paint.measureText(instruction)/2f,h-18f*density,paint);
+        String instruction="DRAG TO ROTATE  •  TAP A DISCOVERY BELOW";
+        c.drawText(instruction,cx-paint.measureText(instruction)/2f,h-48f*density,paint);
+        String[] tags={"SURFACE","ATMOSPHERE","SPECIAL FACT"};
+        for(int j=0;j<3;j++){float tx=w*(0.19f+j*0.31f);paint.setColor(0xCC314778);c.drawRoundRect(new RectF(tx-42*density,h-38*density,tx+42*density,h-10*density),12*density,12*density,paint);paint.setColor(0xFFFFFFFF);paint.setTextSize(8.5f*density);c.drawText(tags[j],tx-paint.measureText(tags[j])/2,h-21*density,paint);}
     }
 
     private void drawSphere(Canvas c,float cx,float cy,float r,int color,int index,float angle) {
@@ -158,7 +168,7 @@ public class PlanetView extends View {
         if(detailMode) {
             if(event.getActionMasked()==MotionEvent.ACTION_DOWN){previousX=event.getX();dragging=true;return true;}
             if(event.getActionMasked()==MotionEvent.ACTION_MOVE&&dragging){float dx=event.getX()-previousX;rotation+=dx/(Math.max(1f,getWidth())*.8f)*6.28f;previousX=event.getX();invalidate();return true;}
-            if(event.getActionMasked()==MotionEvent.ACTION_UP||event.getActionMasked()==MotionEvent.ACTION_CANCEL){dragging=false;return true;}
+            if(event.getActionMasked()==MotionEvent.ACTION_UP||event.getActionMasked()==MotionEvent.ACTION_CANCEL){if(dragging && Math.abs(event.getX()-previousX)<8*density && worldFeatureListener!=null){int feature=Math.min(2,Math.max(0,(int)(event.getX()/Math.max(1,getWidth())*3)));worldFeatureListener.onWorldFeature(selectedPlanet,feature);}dragging=false;return true;}
             return true;
         }
         gestures.onTouchEvent(event);
