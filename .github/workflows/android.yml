@@ -23,6 +23,38 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
+      - name: Fetch free CC0 planet artwork
+        run: |
+          mkdir -p app/src/main/assets/planets
+          curl -fL --retry 3 "https://screamingbrainstudios.com/sbs_-_2d_planet_pack_-_small_256x256/" -o /tmp/planet-pack.zip
+          python3 - <<'PY'
+          import zipfile, os
+          archive = zipfile.ZipFile('/tmp/planet-pack.zip')
+          files = sorted(n for n in archive.namelist() if n.lower().endswith(('.png','.webp','.jpg','.jpeg')) and not n.endswith('/'))
+          if not files:
+              raise SystemExit("No planet images found in the CC0 asset archive")
+          groups = {
+              "planet_mercury.png": ("rocky", "barren", "crater"),
+              "planet_venus.png": ("desert", "sandy", "poison"),
+              "planet_earth.png": ("ocean", "earth", "tropical"),
+              "planet_mars.png": ("martian", "mars", "red", "arid"),
+              "planet_jupiter.png": ("gas", "jupiter", "giant"),
+              "planet_saturn.png": ("gas", "saturn", "giant"),
+              "planet_uranus.png": ("ice", "methane", "snowy"),
+              "planet_neptune.png": ("ice", "methane", "tundra")
+          }
+          used = set()
+          for output, keywords in groups.items():
+              candidates = [n for n in files if n not in used and any(k in n.lower() for k in keywords)]
+              chosen = candidates[0] if candidates else next((n for n in files if n not in used), files[0])
+              used.add(chosen)
+              ext = os.path.splitext(chosen)[1].lower()
+              # Android BitmapFactory supports PNG/JPEG/WebP; normalize the output extension.
+              target = os.path.join('app/src/main/assets/planets', output)
+              with archive.open(chosen) as src, open(target, 'wb') as dst:
+                  dst.write(src.read())
+              print(f"{output} <= {chosen}")
+          PY
       - name: Build debug APK
         run: gradle --no-daemon assembleDebug
       - name: Upload APK
