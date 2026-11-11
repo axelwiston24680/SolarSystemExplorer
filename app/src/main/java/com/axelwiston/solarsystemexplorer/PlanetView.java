@@ -174,9 +174,14 @@ public class PlanetView extends View {
         }
         Bitmap artwork = planetImages.get(index);
         if (artwork != null) {
-            RectF destination = new RectF(cx-r, cy-r, cx+r, cy+r);
+            RectF destination = new RectF(cx-r*1.04f, cy-r*1.04f, cx+r*1.04f, cy+r*1.04f);
             paint.setShader(null); paint.setStyle(Paint.Style.FILL); paint.setAlpha(255);
+            Path artworkMask = new Path();
+            artworkMask.addCircle(cx, cy, r*.94f, Path.Direction.CW);
+            int artworkSave = c.save();
+            c.clipPath(artworkMask);
             c.drawBitmap(artwork, null, destination, paint);
+            c.restoreToCount(artworkSave);
             if (index == 6) {
                 paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(2f,r*.12f)); paint.setColor(0xFFFFE7B1);
                 c.drawArc(new RectF(cx-r*1.85f,cy-r*.48f,cx+r*1.85f,cy+r*.48f),195,150,false,paint);
