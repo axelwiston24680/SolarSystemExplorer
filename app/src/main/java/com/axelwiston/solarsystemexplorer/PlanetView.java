@@ -2,11 +2,16 @@ package com.axelwiston.solarsystemexplorer;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RadialGradient;
 import android.graphics.RectF;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -22,6 +27,7 @@ public class PlanetView extends View {
     private OnPlanetOpenedListener openedListener;
     private OnWorldFeatureListener worldFeatureListener;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Map<Integer, Bitmap> planetImages = new HashMap<>();
     private final float[] x = new float[9], y = new float[9], radius = new float[9];
     private final float density;
     private final GestureDetector gestures;
@@ -41,6 +47,7 @@ public class PlanetView extends View {
     public PlanetView(Context context, AttributeSet attrs) {
         super(context, attrs);
         density = getResources().getDisplayMetrics().density;
+        loadPlanetImages();
         setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         setClickable(true);
         gestures = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
@@ -60,6 +67,21 @@ public class PlanetView extends View {
                 return true;
             }
         });
+    }
+
+
+    // CC0 planet artwork is packaged by the GitHub Actions build from the
+    // Screaming Brain Studios 2D Planet Pack. Canvas shading remains as fallback.
+    private void loadPlanetImages() {
+        String[] files = {null, "planet_mercury.png", "planet_venus.png", "planet_earth.png",
+                "planet_mars.png", "planet_jupiter.png", "planet_saturn.png",
+                "planet_uranus.png", "planet_neptune.png"};
+        for (int i = 1; i < files.length; i++) {
+            try (InputStream in = getContext().getAssets().open("planets/" + files[i])) {
+                Bitmap bitmap = BitmapFactory.decodeStream(in);
+                if (bitmap != null) planetImages.put(i, bitmap);
+            } catch (Exception ignored) { /* Keep the built-in illustrated fallback. */ }
+        }
     }
 
     public void setOnPlanetSelectedListener(OnPlanetSelectedListener l) { listener = l; }
@@ -149,6 +171,19 @@ public class PlanetView extends View {
             paint.setStrokeWidth(Math.max(1f,r*.07f));paint.setColor(0xFFFFE8B1);
             c.drawOval(new RectF(cx-r*1.85f,cy-r*.48f,cx+r*1.85f,cy+r*.48f),paint);
             paint.setStyle(Paint.Style.FILL);
+        }
+        Bitmap artwork = planetImages.get(index);
+        if (artwork != null) {
+            RectF destination = new RectF(cx-r, cy-r, cx+r, cy+r);
+            paint.setShader(null); paint.setStyle(Paint.Style.FILL); paint.setAlpha(255);
+            c.drawBitmap(artwork, null, destination, paint);
+            if (index == 6) {
+                paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(2f,r*.12f)); paint.setColor(0xFFFFE7B1);
+                c.drawArc(new RectF(cx-r*1.85f,cy-r*.48f,cx+r*1.85f,cy+r*.48f),195,150,false,paint);
+            }
+            paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(1f,r*.025f)); paint.setColor(0x668FFFFF);
+            c.drawCircle(cx,cy,r,paint); paint.setStyle(Paint.Style.FILL);
+            return;
         }
         paint.setShader(new RadialGradient(cx-r*.36f,cy-r*.42f,Math.max(r*1.65f,1f),
             new int[]{lighten(color),color,0xFF11152D},null,Shader.TileMode.CLAMP));
