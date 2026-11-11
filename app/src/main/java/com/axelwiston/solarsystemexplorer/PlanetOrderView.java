@@ -184,7 +184,7 @@ public class PlanetOrderView extends View {
     private float maxRadius() { return Math.min(getWidth()*.43f,getHeight()*.405f); }\n    private float orbitRadius(int slot) { float max=maxRadius(); return 34f*density + slot*Math.max(1f,(max-34f*density)/7f); }
 
     @Override public boolean onTouchEvent(MotionEvent e) {
-        float cx=getWidth()/2f, cy=getHeight()/2f+7f*density, step=maxRadius()/8f;
+        float cx=getWidth()/2f, cy=getHeight()/2f+7f*density;
         if (orbiting) return true;
         if (e.getActionMasked()==MotionEvent.ACTION_DOWN) {
             float best=Float.MAX_VALUE;
@@ -203,8 +203,8 @@ public class PlanetOrderView extends View {
         }
         if(e.getActionMasked()==MotionEvent.ACTION_UP && draggingPlanet>=0) {
             float distance=(float)Math.hypot(e.getX()-cx,e.getY()-cy);
-            int target=Math.round(distance/Math.max(1,step))-1;
-            target=Math.max(0,Math.min(7,target));
+            int target=0; float nearest=Float.MAX_VALUE;
+            for(int slot=0;slot<8;slot++){float delta=Math.abs(distance-orbitRadius(slot));if(delta<nearest){nearest=delta;target=slot;}}
             int occupant=-1;
             for(int i=0;i<8;i++) if(orbitOf[i]==target){occupant=i;break;}
             int old=orbitOf[draggingPlanet];
