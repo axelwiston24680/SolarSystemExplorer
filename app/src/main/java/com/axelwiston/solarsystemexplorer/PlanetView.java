@@ -93,12 +93,12 @@ public class PlanetView extends View {
         float[] orbit={0,42,65,88,111,139,166,191,215};
         paint.setStyle(Paint.Style.STROKE); paint.setStrokeWidth(Math.max(1f,density)); paint.setColor(0x557C91D8);
         for(int i=1;i<9;i++){float d=orbit[i]*unit;c.drawOval(new RectF(cx-d,cy-d*.48f,cx+d,cy+d*.48f),paint);}
-        x[0]=cx;y[0]=cy;radius[0]=20f*unit;
+        x[0]=cx;y[0]=cy;radius[0]=24f*unit;
         for(int i=1;i<9;i++){
             float a = orbitAnimation ? orbitPhase + i * 0.82f : (float)Math.PI;
             x[i]=cx+(float)Math.cos(a)*orbit[i]*.82f*unit;y[i]=cy+(float)Math.sin(a)*orbit[i]*.39f*unit;
             float size=i==5?13f:(i==6?12f:(i==1?5f:(i==2||i==3||i==4?8f:9f)));
-            radius[i]=size*unit;
+            radius[i]=size*unit*1.4f;
         }
         for(int i=0;i<9;i++){
             drawSphere(c,x[i],y[i],radius[i],colors[i],i,orbitPhase + rotation);
