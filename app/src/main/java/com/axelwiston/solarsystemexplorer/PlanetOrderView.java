@@ -92,7 +92,7 @@ public class PlanetOrderView extends View {
         c.drawCircle(cx, cy, 35 * density, p);
         p.setShader(new RadialGradient(cx - 5*density, cy - 7*density, 25*density,
                 new int[]{0xFFFFFFC0,0xFFFFB52B,0xFFE96B12}, null, Shader.TileMode.CLAMP));
-        c.drawCircle(cx, cy, 22*density, p);
+        c.drawCircle(cx, cy, 17*density, p);
         p.setShader(null);
         p.setColor(0xFFFFE9A3); p.setTextSize(10*density);
         String sun = "SUN";
@@ -101,7 +101,7 @@ public class PlanetOrderView extends View {
         // Eight circular orbital tracks.
         p.setStyle(Paint.Style.STROKE);
         for (int slot = 0; slot < 8; slot++) {
-            float r = (slot + 1) * step;
+            float r = orbitRadius(slot);
             p.setStrokeWidth(slot == 0 ? 1.5f*density : density);
             p.setColor(0x557FA7E8);
             c.drawCircle(cx, cy, r, p);
@@ -115,7 +115,7 @@ public class PlanetOrderView extends View {
         // Each planet stays on its assigned orbit while the child moves it.
         for (int planet = 0; planet < 8; planet++) {
             if (planet == draggingPlanet) continue;
-            float r = (orbitOf[planet] + 1) * step;
+            float r = orbitRadius(orbitOf[planet]);
             float angle = -1.15f + planet * .77f + (orbiting ? phase * (planet % 2 == 0 ? 1 : -1) * (1.35f/(planet+1)) : 0f);
             float px = cx + (float)Math.cos(angle) * r;
             float py = cy + (float)Math.sin(angle) * r;
@@ -181,7 +181,7 @@ public class PlanetOrderView extends View {
         return Color.rgb(Math.min(255,Color.red(color)+65),Math.min(255,Color.green(color)+65),Math.min(255,Color.blue(color)+65));
     }
 
-    private float maxRadius() { return Math.min(getWidth()*.43f,getHeight()*.405f); }
+    private float maxRadius() { return Math.min(getWidth()*.43f,getHeight()*.405f); }\n    private float orbitRadius(int slot) { float max=maxRadius(); return 34f*density + slot*Math.max(1f,(max-34f*density)/7f); }
 
     @Override public boolean onTouchEvent(MotionEvent e) {
         float cx=getWidth()/2f, cy=getHeight()/2f+7f*density, step=maxRadius()/8f;
@@ -189,7 +189,7 @@ public class PlanetOrderView extends View {
         if (e.getActionMasked()==MotionEvent.ACTION_DOWN) {
             float best=Float.MAX_VALUE;
             for(int planet=0;planet<8;planet++) {
-                float r=(orbitOf[planet]+1)*step;
+                float r=orbitRadius(orbitOf[planet]);
                 float angle=-1.15f+planet*.77f;
                 float px=cx+(float)Math.cos(angle)*r, py=cy+(float)Math.sin(angle)*r;
                 float d=(e.getX()-px)*(e.getX()-px)+(e.getY()-py)*(e.getY()-py);
