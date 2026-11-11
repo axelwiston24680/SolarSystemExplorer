@@ -143,7 +143,7 @@ public class PlanetView extends View {
         else if(index==5||index==6){for(int j=-3;j<=3;j++){paint.setColor(j%2==0?0x55734B32:0x558B6546);c.drawRect(cx-r,cy+j*r*.23f,cx+r,cy+j*r*.23f+r*.09f,paint);}}
         else if(index==8||index==7){paint.setColor(0x447FE9F4);for(int j=0;j<4;j++)c.drawOval(new RectF(cx-r*.8f,cy-r*.65f+j*r*.38f,cx+r*.8f,cy-r*.5f+j*r*.38f),paint);}
         c.restoreToCount(save);
-        paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(1f,r*.025f));paint.setColor(0x668FFFFFF);c.drawCircle(cx,cy,r,paint);
+        paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(1f,r*.025f));paint.setColor(0x668FFFFF);c.drawCircle(cx,cy,r,paint);
         paint.setStyle(Paint.Style.FILL);
     }
 
