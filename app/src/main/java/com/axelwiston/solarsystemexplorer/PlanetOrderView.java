@@ -119,7 +119,9 @@ public class PlanetOrderView extends View {
             float angle = -1.15f + planet * .77f + (orbiting ? phase * (planet % 2 == 0 ? 1 : -1) * (1.35f/(planet+1)) : 0f);
             float px = cx + (float)Math.cos(angle) * r;
             float py = cy + (float)Math.sin(angle) * r;
-            drawPlanet(c, px, py, planet, 15.5f*density);\n            p.setShader(null);p.setStyle(Paint.Style.FILL);p.setColor(0xFFEAF0FF);p.setTextSize(8.5f*density);\n            c.drawText(names[planet],px+13*density,py+3*density,p);
+            drawPlanet(c, px, py, planet, 15.5f*density);
+            p.setShader(null);p.setStyle(Paint.Style.FILL);p.setColor(0xFFEAF0FF);p.setTextSize(8.5f*density);
+            c.drawText(names[planet],px+13*density,py+3*density,p);
         }
         if (draggingPlanet >= 0) {
             drawPlanet(c, dragX, dragY, draggingPlanet, 19*density);
