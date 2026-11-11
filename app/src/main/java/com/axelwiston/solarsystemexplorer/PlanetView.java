@@ -127,32 +127,84 @@ public class PlanetView extends View {
     }
 
     private void drawSphere(Canvas c,float cx,float cy,float r,int color,int index,float angle) {
-        if(index==6) {
-            paint.setShader(null);paint.setColor(0xFFDCC48A);paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(Math.max(3f,r*.12f));
-            c.drawOval(new RectF(cx-r*1.65f,cy-r*.35f,cx+r*1.65f,cy+r*.35f),paint);
+        if (index == 0) {
+            paint.setShader(new RadialGradient(cx,cy,r*2.1f,
+                    new int[]{0x99FFF3A0,0x55FF9D24,0x00FF6A00},null,Shader.TileMode.CLAMP));
+            c.drawCircle(cx,cy,r*1.75f,paint);
+            paint.setShader(null);
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(1.5f,r*.07f));paint.setColor(0xFFFFD45A);
+            for(int k=0;k<12;k++){
+                double a=k*Math.PI/6.0+angle*.05;
+                float x1=cx+(float)Math.cos(a)*r*1.04f,y1=cy+(float)Math.sin(a)*r*1.04f;
+                float x2=cx+(float)Math.cos(a)*r*1.28f,y2=cy+(float)Math.sin(a)*r*1.28f;
+                c.drawLine(x1,y1,x2,y2,paint);
+            }
+            paint.setStyle(Paint.Style.FILL);
         }
-        paint.setStyle(Paint.Style.FILL);
-        paint.setShader(new RadialGradient(cx-r*.35f,cy-r*.4f,Math.max(r*1.5f,1f),
+        // Saturn's broad rings sit behind the globe.
+        if(index==6){
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(3f,r*.24f));
+            paint.setColor(0xFFD9BD83);
+            c.drawOval(new RectF(cx-r*1.85f,cy-r*.48f,cx+r*1.85f,cy+r*.48f),paint);
+            paint.setStrokeWidth(Math.max(1f,r*.07f));paint.setColor(0xFFFFE8B1);
+            c.drawOval(new RectF(cx-r*1.85f,cy-r*.48f,cx+r*1.85f,cy+r*.48f),paint);
+            paint.setStyle(Paint.Style.FILL);
+        }
+        paint.setShader(new RadialGradient(cx-r*.36f,cy-r*.42f,Math.max(r*1.65f,1f),
             new int[]{lighten(color),color,0xFF11152D},null,Shader.TileMode.CLAMP));
         c.drawCircle(cx,cy,r,paint);paint.setShader(null);
         int save=c.save();
         Path clip=new Path();clip.addCircle(cx,cy,r,Path.Direction.CW);c.clipPath(clip);
-        // Curved longitude bands move as the user drags, creating a simple
-        // rotating-globe effect without requiring large image assets.
-        paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(1.2f,r*.035f));
-        paint.setColor(0x55301820);
-        for(int k=-2;k<=2;k++){
-            float phase=(float)Math.sin(angle+k*1.15f);
-            float rx=Math.max(r*.08f,Math.abs(phase)*r*.72f);
-            c.drawOval(new RectF(cx-rx,cy-r*.92f,cx+rx,cy+r*.92f),paint);
+
+        if(index==1){ // Mercury: craters and rocky terrain
+            paint.setColor(0x66806C5D);
+            c.drawCircle(cx-r*.38f,cy-r*.28f,r*.19f,paint);
+            c.drawCircle(cx+r*.32f,cy+r*.22f,r*.14f,paint);
+            c.drawCircle(cx-r*.08f,cy+r*.48f,r*.09f,paint);
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(1,r*.035f));paint.setColor(0x55FFF0D5);
+            c.drawCircle(cx-r*.38f,cy-r*.28f,r*.19f,paint);c.drawCircle(cx+r*.32f,cy+r*.22f,r*.14f,paint);
+            paint.setStyle(Paint.Style.FILL);
+        } else if(index==2){ // Venus: thick golden cloud bands
+            paint.setColor(0x66FFF1C5);
+            for(int j=-2;j<=2;j++)c.drawOval(new RectF(cx-r*1.1f,cy+j*r*.35f-r*.12f,cx+r*1.1f,cy+j*r*.35f+r*.08f),paint);
+        } else if(index==3){ // Earth: oceans, continents and polar ice
+            paint.setColor(0xFF39A96B);
+            Path land=new Path();land.moveTo(cx-r*.72f,cy-r*.2f);land.cubicTo(cx-r*.52f,cy-r*.62f,cx-r*.1f,cy-r*.45f,cx-r*.13f,cy-r*.08f);land.cubicTo(cx-r*.4f,cy+r*.04f,cx-r*.32f,cy+r*.48f,cx-r*.56f,cy+r*.55f);land.close();c.drawPath(land,paint);
+            Path land2=new Path();land2.moveTo(cx+r*.12f,cy-r*.56f);land2.cubicTo(cx+r*.65f,cy-r*.62f,cx+r*.7f,cy-r*.22f,cx+r*.42f,cy-r*.04f);land2.cubicTo(cx+r*.58f,cy+r*.26f,cx+r*.28f,cy+r*.58f,cx+r*.08f,cy+r*.27f);land2.close();c.drawPath(land2,paint);
+            paint.setColor(0xFFB9E7F5);c.drawOval(new RectF(cx-r*.72f,cy-r*.9f,cx+r*.72f,cy-r*.7f),paint);c.drawOval(new RectF(cx-r*.7f,cy+r*.72f,cx+r*.7f,cy+r*.9f),paint);
+            paint.setColor(0x44FFFFFF);c.drawOval(new RectF(cx-r*.55f,cy-r*.38f,cx+r*.45f,cy-r*.2f),paint);
+        } else if(index==4){ // Mars: rusty surface, craters and polar cap
+            paint.setColor(0xFF9A3E2C);c.drawCircle(cx+r*.28f,cy-r*.12f,r*.16f,paint);
+            c.drawCircle(cx-r*.4f,cy+r*.32f,r*.11f,paint);
+            c.drawCircle(cx+r*.58f,cy+r*.42f,r*.07f,paint);
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(1,r*.025f));paint.setColor(0x66FFD0A0);
+            c.drawCircle(cx+r*.28f,cy-r*.12f,r*.16f,paint);c.drawCircle(cx-r*.4f,cy+r*.32f,r*.11f,paint);paint.setStyle(Paint.Style.FILL);
+            paint.setColor(0xCCF3E4D1);c.drawOval(new RectF(cx-r*.32f,cy-r*.96f,cx+r*.42f,cy-r*.78f),paint);
+        } else if(index==5){ // Jupiter: broad turbulent cloud bands and Great Red Spot
+            for(int j=-4;j<=4;j++){
+                paint.setColor(j%2==0?0x88A85F37:0x99F3D0A0);
+                c.drawRect(cx-r*1.1f,cy+j*r*.22f,cx+r*1.1f,cy+j*r*.22f+r*.105f,paint);
+            }
+            paint.setColor(0xFFB84F3E);c.drawOval(new RectF(cx+r*.22f,cy-r*.04f,cx+r*.72f,cy+r*.25f),paint);
+            paint.setColor(0x66FFF0D5);c.drawOval(new RectF(cx-r*.72f,cy-r*.48f,cx+r*.2f,cy-r*.34f),paint);
+        } else if(index==6){ // Saturn: subtle cream cloud stripes
+            for(int j=-3;j<=3;j++){paint.setColor(j%2==0?0x66A77D48:0x66FFF0C5);c.drawRect(cx-r,cy+j*r*.24f,cx+r,cy+j*r*.24f+r*.08f,paint);}
+        } else if(index==7){ // Uranus: pale methane atmosphere
+            paint.setColor(0x557FFFFF);for(int j=-2;j<=2;j++)c.drawOval(new RectF(cx-r,cy+j*r*.3f-r*.07f,cx+r,cy+j*r*.3f+r*.04f),paint);
+        } else if(index==8){ // Neptune: deep blue bands and a dark storm
+            paint.setColor(0x4479B8FF);for(int j=-2;j<=2;j++)c.drawOval(new RectF(cx-r,cy+j*r*.32f-r*.06f,cx+r,cy+j*r*.32f+r*.04f),paint);
+            paint.setColor(0x5530196B);c.drawOval(new RectF(cx+r*.18f,cy-r*.05f,cx+r*.58f,cy+r*.2f),paint);
         }
-        paint.setStyle(Paint.Style.FILL);
-        if(index==3){paint.setColor(0xFF4DBB78);c.drawOval(new RectF(cx-r*.65f,cy-r*.25f,cx-r*.05f,cy+r*.12f),paint);c.drawOval(new RectF(cx+r*.08f,cy-r*.55f,cx+r*.55f,cy-r*.08f),paint);}
-        else if(index==4){paint.setColor(0xFF9B3E2D);c.drawCircle(cx+r*.25f,cy-r*.12f,r*.16f,paint);c.drawCircle(cx-r*.4f,cy+r*.35f,r*.09f,paint);}
-        else if(index==5||index==6){for(int j=-3;j<=3;j++){paint.setColor(j%2==0?0x55734B32:0x558B6546);c.drawRect(cx-r,cy+j*r*.23f,cx+r,cy+j*r*.23f+r*.09f,paint);}}
-        else if(index==8||index==7){paint.setColor(0x447FE9F4);for(int j=0;j<4;j++)c.drawOval(new RectF(cx-r*.8f,cy-r*.65f+j*r*.38f,cx+r*.8f,cy-r*.5f+j*r*.38f),paint);}
+
+        // Soft atmospheric highlight on the sunward edge.
+        paint.setShader(new RadialGradient(cx-r*.42f,cy-r*.48f,r*1.2f,
+                new int[]{0x33FFFFFF,0x00FFFFFF},null,Shader.TileMode.CLAMP));
+        c.drawCircle(cx,cy,r,paint);paint.setShader(null);
         c.restoreToCount(save);
+        if(index==6){
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(2f,r*.12f));paint.setColor(0xFFFFE7B1);
+            c.drawArc(new RectF(cx-r*1.85f,cy-r*.48f,cx+r*1.85f,cy+r*.48f),195,150,false,paint);
+        }
         paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(1f,r*.025f));paint.setColor(0x668FFFFF);c.drawCircle(cx,cy,r,paint);
         paint.setStyle(Paint.Style.FILL);
     }
